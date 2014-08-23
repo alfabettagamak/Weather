@@ -3,6 +3,8 @@
   <title>Wheather</title>
  </head>
  <body>
- <?php echo '<p>Wheather</p>'; ?>
+ <?php echo '<p>Wheather</p>'; 
+ phpinfo();
+ ?>
  </body>
 </html>
