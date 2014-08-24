@@ -30,8 +30,10 @@ $result = json_decode($result, true);
 $result = $result[result];
 echo '<p>Decode</p>'; 
 print_r($result);
-echo "Температура : $result[temp_current_c]"; 
-echo "Давление : $result[pressure_avg] мм " ; 
-echo "Влажность : $result[humidity_avg] % "; 
-echo "Скорость ветра : $result[wind_avg] м/с"; 
+echo "\nТемпература : $result[temp_current_c]"; 
+echo "\n $result[cloud_title] "; 
+echo "$result[precip_title]"; 
+echo "\nДавление : $result[pressure_avg] мм " ; 
+echo "\nВлажность : $result[humidity_avg] % "; 
+echo "\nСкорость ветра : $result[wind_avg] м/с"; 
 ?>
