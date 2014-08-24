@@ -31,7 +31,7 @@ $result = $result[result];
 echo '<p>Decode</p>'; 
 print_r($result);
 echo "\nТемпература : $result[temp_current_c]"; 
-echo "\n $result[cloud_title] "; 
+echo iconv('Windows-1251', 'UTF-8', "\n $result[cloud_title]"); 
 echo "$result[precip_title]"; 
 echo "\nДавление : $result[pressure_avg] мм " ; 
 echo "\nВлажность : $result[humidity_avg] % "; 
