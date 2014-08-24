@@ -10,6 +10,8 @@ $request = array(
     'params'     => $params,
 );
 $request = json_encode($request);
+echo '<p>Encode</p>'; 
+print_r($request);
 $opts = array(
     'http'=>array(
         'method'=>"POST",
@@ -17,10 +19,14 @@ $opts = array(
 		'header' => 'application/json'
     )
 ); 
-
+echo '<p>Context</p>'; 
 $context = stream_context_create($opts);
+print_r($context);
 $result = file_get_contents($server, 0, $context);
-# $result = json_decode($result, true);
+echo '<p>No json decode</p>'; 
+print_r($result);
 
+$result = json_decode($result, true);
+echo '<p>Decode</p>'; 
 print_r($result);
 ?>
