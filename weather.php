@@ -20,7 +20,7 @@ $opts = array(
 
 $context = stream_context_create($opts);
 $result = file_get_contents($server, 0, $context);
-$result = json_decode($result, true);
+# $result = json_decode($result, true);
 
 print_r($result);
 ?>
