@@ -14,6 +14,7 @@ $opts = array(
     'http'=>array(
         'method'=>"POST",
         'content'=>$request,
+		'header' => 'application/json'
     )
 ); 
 
