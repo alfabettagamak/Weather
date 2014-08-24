@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 $server = 'http://pogoda.ngs.ru/json/';
 $method = 'getForecast';
 $params = array('name' => 'current',
-                'cities' => array('nsk','omsk','tomsk'));
+                'cities' => array("nsk","omsk","tomsk"));
 $request = array(
     'method'    => $method,
     'params'     => $params,
@@ -25,22 +25,22 @@ $result = json_decode($result, true);
 $result = $result['result'];
 echo '<p>Decode</p>'; 
 print_r($result);
-#echo "\nТемпература : $result[temp_current_c]"; 
-#echo "\n $result[cloud_title] "; 
-#echo "$result[precip_title]"; 
-#echo "\nДавление : $result[pressure_avg] мм " ; 
-#echo "\nВлажность : $result[humidity_avg] % "; 
+echo "\nТемпература : $result[temp_current_c]"; 
+echo "\n $result[cloud_title] "; 
+echo "$result[precip_title]"; 
+echo "\nДавление : $result[pressure_avg] мм " ; 
+echo "\nВлажность : $result[humidity_avg] % "; 
 echo "\n Параметры:"; 
-
+/*
  $res = array(
- 'city' => $params['cities']
+ 'city' => $params['cities'],
  'time' => date("d.m.Y G:i:s"),
  'temp_current_c' => $result['temp_current_c'],
  'pressure_avg' => $result['pressure_avg'],
  'humidity_avg' => $result['humidity_avg'],
- 'wind_avg' => $result['wind_avg'],
+ 'wind_avg' => $result['wind_avg']
  );
- print_r($res);
+ print_r($res);*/
 
 ?>
 
