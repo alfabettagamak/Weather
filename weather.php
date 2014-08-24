@@ -16,7 +16,7 @@ $opts = array(
     'http'=>array(
         'method'=>"POST",
         'content'=>$request,
-		'header' => 'application/json'
+		'header' => 'Content-Type: application/json'
     )
 ); 
 #echo '<p>Context</p>'; 
@@ -38,12 +38,12 @@ print_r($result);
 echo "\Параметры:"; 
 
  $res = array(
- 'city' => $params[city],
+ 'city' => $params['city'],
  'time' => date("d.m.Y G:i:s"),
- 'temp_current_c' => $result[temp_current_c],
- 'pressure_avg' => $result[pressure_avg],
- 'humidity_avg' => $result[humidity_avg],
- 'wind_avg' => $result[wind_avg],
+ 'temp_current_c' => $result['temp_current_c'],
+ 'pressure_avg' => $result['pressure_avg'],
+ 'humidity_avg' => $result['humidity_avg'],
+ 'wind_avg' => $result['wind_avg'],
  );
  print_r($res);
 ?>
