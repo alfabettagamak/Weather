@@ -10,8 +10,8 @@ $request = array(
     'params'     => $params,
 );
 $request = json_encode($request);
-echo '<p>Encode</p>'; 
-print_r($request);
+#echo '<p>Encode</p>'; 
+#print_r($request);
 $opts = array(
     'http'=>array(
         'method'=>"POST",
@@ -19,14 +19,18 @@ $opts = array(
 		'header' => 'application/json'
     )
 ); 
-echo '<p>Context</p>'; 
+#echo '<p>Context</p>'; 
 $context = stream_context_create($opts);
-print_r($context);
+#print_r($context);
 $result = file_get_contents($server, 0, $context);
-echo '<p>No json decode</p>'; 
-print_r($result);
+#echo '<p>No json decode</p>'; 
+#print_r($result);
 
 $result = json_decode($result, true);
 echo '<p>Decode</p>'; 
 print_r($result);
+echo "Температура : $result[temp_current_c]"; 
+echo "Давление : $result[pressure_avg] мм " ; 
+echo "Влажность : $result[humidity_avg] % "; 
+echo "Скорость ветра : $result[wind_avg] м/с"; 
 ?>
