@@ -27,6 +27,7 @@ $result = file_get_contents($server, 0, $context);
 #print_r($result);
 
 $result = json_decode($result, true);
+$result = $result[result];
 echo '<p>Decode</p>'; 
 print_r($result);
 echo "Температура : $result[temp_current_c]"; 
