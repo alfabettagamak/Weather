@@ -1,0 +1,203 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Map Weather</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
+    <script type="text/javascript" src="http://d3js.org/topojson.v0.min.js"></script>
+</head>
+
+<style>
+    g.tick{ font-size: 10px;
+}
+    path {
+        stroke: white;
+        stroke-width: 0.5 px;
+    }
+    .city {
+        font: 13px verdana;
+    }
+    div.win {
+        position: absolute;
+        text-align: center;
+        width: 150px;
+        height: 50px;
+        padding: 2px;
+        font-size: 12px;
+        background: #FFFFE0;
+        border: 1px;
+        border-radius: 8px;
+        pointer-events: none;
+    }
+     
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;   
+    }
+    .x.axis path {
+        display: none;
+    }
+    .line {
+        fill: none;
+        stroke: gold;
+        stroke-width: 3px;
+    }
+</style>
+<body>
+<div id="monitor"></div>
+<script type="text/javascript">
+    var width = 650;
+    var height = 350;
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+    var div = d3.select("#monitor")
+            .style("opacity", 0)
+            .attr("class","win");
+
+    var projection = d3.geo.albers()
+            .rotate([-105, 0])
+            .center([-10, 65])
+            .parallels([52, 64])
+            .scale(500)
+            .translate([width / 2 , height / 2]);
+
+    var path_map = d3.geo.path().projection(projection);
+
+    queue()
+            .defer(d3.json, "/Geo/russia.json")
+            .defer(d3.csv, "cities.csv")
+            .await(read);
+
+    function read(error, map, data) {
+        if (error) return console.error(error);
+        var cityName = {};
+        var cityMarket = {};
+
+        data.forEach(function (d) {
+            cityName[d.market] = d.City;
+            cityMarket[d.City] = d.market
+        });
+        svg.append("g")
+          .attr("class", "region")
+          .selectAll("path")
+          .data(topojson.object(map, map.objects.russia).geometries)
+          .attr("g", d3.geo.path().projection(d3.geo.albers()))
+          .enter().append("path")
+          .attr("d", path_map)
+          .style("opacity", 0.7)
+          .style("fill", "#D8BFD8");
+
+         var city = svg.selectAll("g.city")
+                .data(data)
+                .enter()
+                .append("g")
+                .attr("class","city")
+                .attr("transform", function(d) { return "translate(" + projection([d.lon, d.lat]) + ")"; });
+
+         city.append("circle")
+           .attr("r","3")
+           .style("fill","gold")
+           .style("opacity", 1);
+
+         city.append("text")
+           .attr("x",5)
+           .attr("y",7)
+           .text(function(d) { return d.City;})
+                //Bubble when mouseover
+           .on("mouseover", function(d) {
+                    d3.select(this).transition().duration(300).style("opacity", 0.80);
+                    div.transition().duration(300)
+                      .style("opacity", 1)
+                      .style("left", (d3.event.pageX) + "px")
+                      .style ("top", (d3.event.pageY -30) + "px");
+                    jQuery.post("finder.php",{city: d.market , indicator: "1" },
+                            function(d){
+                                var row='';
+                                for (var i in d) {
+                                    row = row + "Температура: " + d[i].temp_current_c + "C \n Скорость ветра: " + d[i].wind_avg + "м/с" + "\nДавление: " + d[i].pressure_avg + "мм рт.с"; };
+                                $("#monitor").text(row);}
+                    ,"json");
+                })
+           .on("mouseout", function(d) {
+             d3.select(this).transition().duration(300).style("opacity", 0.80);
+             div.transition().duration(300).style("opacity", 0);
+                })
+                //Create a new SVG for graph when mouse click
+           .on("click", function(d) {
+             d3.select("#Graph").remove();
+             var nice = {top: 20, right: 20, bottom: 30, left: 50};
+             var parseDate = d3.time.format("%b %d %Y %H:%M:%S").parse;
+             var width_graph =350, height_graph = 250;
+
+             var svgGraph = d3.select("body").append("svg")
+                            .attr("id","Graph")
+			    .attr("width", width_graph + nice.left + nice.right)
+                            .attr("height", height_graph + nice.top + nice.bottom)
+                            .append("g")
+                            .attr("transform", "translate(" + nice.left + "," + nice.top + ")");
+
+             jQuery.post("finder.php",{city: d.market , indicator: "0" },
+                        function(data){ //console.log(data);
+                            data.forEach( function(d){
+                                d.time = new Date(d.time * 1000);
+				})
+
+                        var x = d3.time.scale()
+                                .range([0,(width_graph - 20) ]);
+                        var y = d3.scale.linear()
+                                .range([(height_graph - 20), 0]);
+
+                        var xAxis = d3.svg.axis() //Scale X
+                                .scale(x)
+                                .orient("bottom")
+				.tickFormat(d3.time.format("%H:%M"));
+                        var yAxis = d3.svg.axis()  //Scale Y
+                                .scale(y)
+                                .orient("left");
+
+                        var tempFromString = function(d){return parseFloat(d.replace(",", "."));};
+
+                        var getTemp = function(d) { return tempFromString(d.temp_current_c); };
+                        var getTime = function(d) { return d.time; };
+
+                        function getX(d) {return x(d.time);};
+                        var getY = function(d) {
+                            return tempFromString(d.temp_current_c);
+                        };
+                                x.domain (d3.extent(data,getTime));
+                                y.domain (d3.extent(data,getTemp));
+                        //console.log(d3.extent(data.map(getTemp)));
+                        var line = d3.svg.line()
+                                .x(function(d){return x(d.time);})
+                                .y(function(d){return y(tempFromString(d.temp_current_c));});
+                        //console.log(data.map(getY));
+			svgGraph.append("g")
+                                .attr("class", "x axis")
+                                .attr("transform", "translate(0," + height_graph + ")")
+                                .call(xAxis);
+                        svgGraph.append("g")
+                                .attr("class", "y axis")
+                                .call(yAxis)
+                                .append("text")
+                                .attr("transform", "rotate(-90)")
+                                .attr("y", 6)
+                                .attr("dy", ".71em")
+                                .style("text-anchor", "end")
+                                .text("Temperature (C)");
+                        svgGraph.append("path")
+                                .datum(data)
+                                .attr("class", "line")
+                                .attr("d",line );
+
+             },"json");
+           });
+    }
+
+</script>
+</body>
+</html>
