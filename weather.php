@@ -7,9 +7,8 @@
 
 <?php
  error_reporting(E_ALL);
- 
-$server = 'http://pogoda.ngs.ru/json/';
-$method = 'getForecast';
+
+$method = 'getForecasts';
 $params = array('name' => 'current',
                 'cities' => array("nsk","omsk","tomsk"));
 $request = array(
@@ -26,41 +25,41 @@ $opts = array(
     )
 ); 
 
+$server = 'http://pogoda.ngs.ru/json/';
 $context = stream_context_create($opts);
 $result = file_get_contents($server, 0, $context);
 $result = json_decode($result, true);
 $result = $result['result'];
-echo '<p>Decode</p>'; 
-print_r($result);
-echo "\nТемпература : $result[temp_current_c]"; 
-echo "\n $result[cloud_title] "; 
-echo "$result[precip_title]"; 
-echo "\nДавление : $result[pressure_avg] мм " ; 
-echo "\nВлажность : $result[humidity_avg] % "; 
-echo "\n Параметры:"; 
-/*
- $res = array(
- 'city' => $params['cities'],
- 'time' => date("d.m.Y G:i:s"),
- 'temp_current_c' => $result['temp_current_c'],
- 'pressure_avg' => $result['pressure_avg'],
- 'humidity_avg' => $result['humidity_avg'],
- 'wind_avg' => $result['wind_avg']
- );
- print_r($res);*/
-
-?>
-
-<?php 
-try {
- $conn = new Mongo('185.31.161.49');
-
- $db = $conn->test;
- $collection = $db->weather;
-
- $collection->insert($res);
  
- echo 'Inserted document with ID: ' . $weather['_id'];
+print_r($result);
+try{
+   $conn = new Mongo('185.31.161.49');
+   $db = $conn->test;
+   $collection = $db->weather;
+//from json to db
+foreach ($result as $city => $data) {
+   $current = $data['current'];
+   $time = $current['last_success_update_date'];
+   $res = array (
+    'city' => $city,
+    'time' => $time,
+    'temp_current_c' => $current['temp_current_c'],
+    'pressure_avg' => $current['pressure_avg'],
+    'humidity_avg' => $current['humidity_avg'],
+    'wind_avg' => $current['wind_avg']
+   );
+//find value city and time equal value from json-file
+   $cursor = $collection->find(array('city'=>$city, 'time' => $time)); 
+	  
+   $count = $cursor->count();
+   if ($count == 0) {
+      $collection->insert($res);
+   }
+} 
+//delete where time > 24 h
+$rangeQuery = array('time' => array( '$lt' => (String)(time() + strtotime('-1 day', $timestamp))));
+$collection->remove($rangeQuery);
+
  // disconnect from server
  $conn->close();
 } catch (MongoConnectionException $e) {
@@ -70,4 +69,5 @@ try {
 }
 
 ?>
+
 
